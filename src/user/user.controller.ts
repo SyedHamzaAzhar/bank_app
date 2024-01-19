@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { UserService } from './user.service';
+import { BadGatewayException, Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { GetUser } from './get-user.decorator';
+import { UserService } from './user.service';
 
 @Controller('user')
 export class UserController {
@@ -9,6 +11,11 @@ export class UserController {
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
+     const { password, confirmPassword } = createUserDto;
+
+    if (password !== confirmPassword)
+      throw new BadGatewayException("Password/ConfirmPassword must be same");
+
     return this.userService.create(createUserDto);
   }
 
@@ -17,9 +24,10 @@ export class UserController {
     return this.userService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
+  @UseGuards(AuthGuard("jwt"))
+  @Get()
+  findOne(@GetUser() user) {
+    return this.userService.findOne(user.userId);
   }
 
   @Patch(':id')
