@@ -26,3 +26,13 @@ address: string;
 @Length(8, 255)
 confirmPassword: string;
 }
+
+export class VerifyEmailDto {
+  @IsEmail()
+  @Length(5, 127)
+  email: string;
+
+  @IsString()
+  @Length(8, 255)
+  hash: string;
+}

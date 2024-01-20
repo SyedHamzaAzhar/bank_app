@@ -4,7 +4,6 @@ import * as bcrypt from "bcrypt";
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UtilsService } from 'src/utils/utils.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 
 
 @Injectable()
@@ -68,15 +67,12 @@ export class UserService {
           email: true,
           isEmailVerified: true,
           phoneNumber: true,
-          address: true
-          
+          address: true,
+          createdAt:true
         },
     })
   }
 
-  findAll() {
-    return `This action returns all user`;
-  }
 
   async findOne(id: number) {
     const user = await this.prismaService.user.findUnique({
@@ -134,11 +130,32 @@ export class UserService {
     return user;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async verifyEmail(email: string, hash: string) {
+    const user = await this.findUserByEmail(email);
+    if (!user.hash) {
+      throw new BadRequestException(
+        "Your link is invalid or expired. Please try again"
+      );
+    }
+    const isMatch = await bcrypt.compare(hash, user.hash);
+
+    if (!isMatch) {
+      throw new BadRequestException(
+        "Your link is invalid or expired. Please try again"
+      );
+    }
+    await this.prismaService.user.update({
+      where: {
+        email,
+      },
+      data: {
+        hash: null,
+        isEmailVerified: true,
+      },
+    });
+    return { message: "Email verified successfully" };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
-  }
+  
+
 }

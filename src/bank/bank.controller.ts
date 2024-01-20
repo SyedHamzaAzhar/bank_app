@@ -1,34 +1,28 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { GetUser } from 'src/user/get-user.decorator';
 import { BankService } from './bank.service';
 import { CreateBankDto } from './dto/create-bank.dto';
-import { UpdateBankDto } from './dto/update-bank.dto';
 
 @Controller('bank')
 export class BankController {
   constructor(private readonly bankService: BankService) {}
 
+  @UseGuards(AuthGuard("jwt"))
   @Post()
-  create(@Body() createBankDto: CreateBankDto) {
-    return this.bankService.create(createBankDto);
+  create(@Body() createBankDto: CreateBankDto, @GetUser() user) {
+    return this.bankService.create(createBankDto, user.userId);
   }
 
-  @Get()
-  findAll() {
-    return this.bankService.findAll();
-  }
+  
 
+  @UseGuards(AuthGuard("jwt"))
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.bankService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBankDto: UpdateBankDto) {
-    return this.bankService.update(+id, updateBankDto);
-  }
+ 
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.bankService.remove(+id);
-  }
+  
 }

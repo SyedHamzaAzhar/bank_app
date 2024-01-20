@@ -10,7 +10,7 @@ export class UtilsService {
     return bcrypt.hash(password, salt);
   }
 
-    async generateRandomString(): Promise<any> {
+    async generateRandomString() {
     var chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
     var charLength = chars.length;
     var hash = "";

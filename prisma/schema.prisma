@@ -33,10 +33,10 @@ model User {
 
 model BankAccountDetails {
   id                  Int                  @id @default(autoincrement()) @map("id")
-  accountNumber       String?              @map("account_number") @db.VarChar(16)
-  IBAN                String?              @db.VarChar(24)
-  cardNumber          String?              @db.VarChar(16)
-  cvv                 String               @db.VarChar(3)
+  accountNumber       String?              @map("account_number") @db.VarChar(16) @unique()
+  IBAN                String?              @db.VarChar(24) @unique()
+  cardNumber          String?              @db.VarChar(16) @unique()
+  cvv                 String               @db.VarChar(3) @unique()
   expiryDate          DateTime             @db.Date
   bank                String         
   user                User?                @relation(fields: [userId], references: [id])
@@ -51,11 +51,14 @@ model BankAccountDetails {
 
 model Payment { 
   id                  Int                                @id @default(autoincrement()) @map("id")
-  transferedTo        String                             @map("transfered_to")
-  nameOfBank          String                             @map("name_of_bank")
+  transactionId       String                             @map("transaction_id") @unique()
+  transferedTo        String?                            @map("transfered_to")
+  nameOfBank          String ?                           @map("name_of_bank")
   accountNumber       String?                            @map("account_number") @db.VarChar(16)
   IBAN                String?                            @db.VarChar(24)  
   amount              Decimal                            
+  paymentStatus       Status                             @map("payment_status")
+  transactionStatus   TransactionStatus                  @map("transaction_status") 
   bank                BankAccountDetails?                @relation(fields: [bankId], references: [id])
   bankId              Int                                @map("bank_id")
   createdAt           DateTime                           @default(now()) @map("created_at")
@@ -65,3 +68,15 @@ model Payment {
   @@map("payment")
 }
 
+enum Status {
+  paid @map("PAID")
+  unpaid @map("UNPAID")  
+}
+
+enum TransactionStatus {
+  successful @map("SUCCESSFUL")
+  unsuccessful @map("UNSUCCESSFUL")
+  pending @map("PENDING")
+  canceled @map("CANCELED")
+  failed  @map("FAILED")
+}

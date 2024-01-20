@@ -1,26 +1,41 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateBankDto } from './dto/create-bank.dto';
-import { UpdateBankDto } from './dto/update-bank.dto';
 
 @Injectable()
 export class BankService {
-  create(createBankDto: CreateBankDto) {
-    return 'This action adds a new bank';
+  constructor(
+    readonly prismaService: PrismaService
+  ){}
+  create(createBankDto: CreateBankDto, userId: number) {
+    const {accountNumber, IBAN, cardNumber, cvv, expiryDate, bank } = createBankDto
+    return this.prismaService.bankAccountDetails.create({
+      data: {
+        userId,
+        accountNumber,
+        IBAN,
+        cardNumber,
+        cvv,
+        expiryDate,
+        bank
+      }
+    });
   }
 
-  findAll() {
-    return `This action returns all bank`;
+  
+  async findOne(id: number) {
+    const bankDetails = await this.prismaService.bankAccountDetails.findUnique({
+      where: {
+        id
+      }
+    });
+    
+    if (!bankDetails) {
+      throw new BadRequestException("Bank details not found")
+    }
+
+    return bankDetails
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} bank`;
-  }
-
-  update(id: number, updateBankDto: UpdateBankDto) {
-    return `This action updates a #${id} bank`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} bank`;
-  }
+  
 }
